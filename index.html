@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1e8e3e">
+<meta name="description" content="Calculadora de diluição de produtos automotivos. Descubra a quantidade exata de produto e água para qualquer volume e proporção.">
+<title>Calculadora de Diluição · Miromi</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Diluição">
+<style>
+:root{
+  --verde:#1e8e3e; --verde-claro:#34c759; --verde-bg:#e8fff0;
+  --tinta:#15241a; --cinza:#5b6b60; --linha:#d9e6dd;
+  --sombra:0 6px 24px rgba(20,60,35,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--tinta);
+  background:linear-gradient(180deg,#f3fbf6 0%,#eaf6ee 100%);
+  min-height:100dvh;
+  padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 24px);
+  line-height:1.45;
+}
+.wrap{max-width:520px;margin:0 auto}
+header{text-align:center;padding:22px 0 8px}
+header .logo{
+  width:64px;height:64px;border-radius:18px;display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,var(--verde-claro),var(--verde));box-shadow:var(--sombra);
+}
+header .logo img{width:44px;height:44px}
+header h1{font-size:22px;margin:12px 0 2px;letter-spacing:-.3px}
+header p{margin:0;color:var(--cinza);font-size:14px}
+
+.card{background:#fff;border-radius:20px;box-shadow:var(--sombra);padding:18px;margin-top:16px}
+
+.campo{margin-bottom:18px}
+.campo:last-child{margin-bottom:0}
+.rotulo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin-bottom:8px}
+.rotulo .n{
+  flex:none;width:24px;height:24px;border-radius:50%;background:var(--verde-bg);color:var(--verde);
+  display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;
+}
+select,input{
+  width:100%;font-size:17px;font-family:inherit;color:var(--tinta);
+  padding:14px 14px;border:2px solid var(--linha);border-radius:14px;background:#fff;
+  appearance:none;-webkit-appearance:none;
+}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%231e8e3e' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:42px;
+}
+select:focus,input:focus{outline:none;border-color:var(--verde-claro);box-shadow:0 0 0 4px rgba(52,199,89,.15)}
+.dica{font-size:12.5px;color:var(--cinza);margin-top:6px}
+
+#resultado{margin-top:6px}
+.metodo-tag{
+  display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--verde);
+  background:var(--verde-bg);padding:6px 12px;border-radius:999px;font-weight:700;margin-bottom:12px;
+}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.box{border-radius:16px;padding:14px;text-align:center;background:var(--verde-bg)}
+.box h3{margin:0 0 4px;font-size:13px;font-weight:700;color:var(--verde);text-transform:uppercase;letter-spacing:.4px}
+.box .v{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.box.total{grid-column:1 / -1;background:linear-gradient(180deg,var(--verde-claro),var(--verde));color:#fff}
+.box.total h3{color:rgba(255,255,255,.85)}
+.box .v small{font-size:14px;font-weight:600;opacity:.7}
+.resumo{margin-top:12px;font-size:14px;color:var(--cinza);text-align:center}
+.resumo b{color:var(--tinta)}
+.copiar{
+  width:100%;margin-top:14px;padding:13px;border:none;border-radius:14px;cursor:pointer;
+  background:#11331f;color:#fff;font-size:15px;font-weight:700;font-family:inherit;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.15s;
+}
+.copiar:active{transform:scale(.985)}
+.copiar.ok{background:var(--verde)}
+
+details.sugestoes{margin-top:16px;background:#fff;border-radius:20px;box-shadow:var(--sombra);overflow:hidden}
+details.sugestoes summary{padding:16px 18px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.sugestoes summary::-webkit-details-marker{display:none}
+details.sugestoes summary .chev{transition:.2s;color:var(--verde)}
+details.sugestoes[open] summary .chev{transform:rotate(180deg)}
+.tab-wrap{padding:0 12px 14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--linha)}
+th{background:var(--verde);color:#fff;font-weight:700}
+th:first-child{border-top-left-radius:10px}
+th:last-child{border-top-right-radius:10px}
+tbody tr:nth-child(even){background:#f4fbf6}
+td:first-child{font-weight:800;color:var(--verde)}
+
+#instalar{
+  display:none;align-items:center;gap:12px;margin-top:16px;padding:14px 16px;
+  background:#fff;border-radius:16px;box-shadow:var(--sombra);
+}
+#instalar img{width:36px;height:36px;border-radius:9px}
+#instalar .txt{flex:1;font-size:13.5px;color:var(--cinza)}
+#instalar .txt b{color:var(--tinta);display:block;font-size:14.5px}
+#instalar button{
+  flex:none;border:none;background:var(--verde);color:#fff;font-weight:700;font-family:inherit;
+  padding:10px 16px;border-radius:12px;cursor:pointer;font-size:14px;
+}
+footer{text-align:center;color:var(--cinza);font-size:12.5px;margin-top:22px;line-height:1.6}
+footer a{color:var(--verde);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="logo"><img src="icons/icon-512.png" alt="Logo gota d'água"></span>
+    <h1>Calculadora de Diluição</h1>
+    <p>Produto + água na medida certa</p>
+  </header>
+
+  <div class="card">
+    <div class="campo">
+      <label class="rotulo" for="fabricante"><span class="n">1</span> Fabricante ou método</label>
+      <select id="fabricante">
+        <option value="" disabled selected>Selecione…</option>
+        <optgroup label="Fabricantes">
+          <option value="Alcance" data-metodo="1:2">Alcance</option>
+          <option value="Autoamerica" data-metodo="1:1">Autoamerica</option>
+          <option value="CarPro" data-metodo="1:1">CarPro</option>
+          <option value="EasyTech" data-metodo="1:2">EasyTech</option>
+          <option value="Finisher" data-metodo="1:2">Finisher</option>
+          <option value="Lincoln" data-metodo="1:1">Lincoln</option>
+          <option value="Meguiars" data-metodo="1:1">Meguiars</option>
+          <option value="Mills" data-metodo="1:1">Mills</option>
+          <option value="Protelim" data-metodo="1:2">Protelim</option>
+          <option value="Razux" data-metodo="1:2">Razux</option>
+          <option value="Sonax" data-metodo="1:1">Sonax</option>
+          <option value="SpeedCar" data-metodo="1:1">SpeedCar</option>
+          <option value="Vintex" data-metodo="1:2">Vintex</option>
+          <option value="Vonixx" data-metodo="1:2">Vonixx</option>
+        </optgroup>
+        <optgroup label="Métodos diretos">
+          <option value="1:1" data-metodo="1:1">Diluição 1:1 (meio-a-meio)</option>
+          <option value="1:2" data-metodo="1:2">Diluição 1:2 (meio-a-meio)</option>
+        </optgroup>
+      </select>
+      <div class="dica">Cada marca usa um método. Não sabe? Use um dos métodos diretos.</div>
+    </div>
+
+    <div class="campo">
+      <label class="rotulo" for="volume"><span class="n">2</span> Volume total que vou preparar</label>
+      <select id="volume">
+        <option value="100">100 ml</option>
+        <option value="200">200 ml</option>
+        <option value="300">300 ml</option>
+        <option value="400">400 ml</option>
+        <option value="500" selected>500 ml</option>
+        <option value="600">600 ml</option>
+        <option value="700">700 ml</option>
+        <option value="800">800 ml</option>
+        <option value="900">900 ml</option>
+        <option value="1000">1 litro (1000 ml)</option>
+        <option value="2000">2 litros (2000 ml)</option>
+        <option value="5000">5 litros (5000 ml)</option>
+        <option value="10000">10 litros (10000 ml)</option>
+        <option value="20000">20 litros (20000 ml)</option>
+        <option value="custom">Outro valor…</option>
+      </select>
+      <input id="volume-custom" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="Digite o volume em ml" style="display:none;margin-top:10px">
+    </div>
+
+    <div class="campo">
+      <label class="rotulo" for="diluicao"><span class="n">3</span> Diluição</label>
+      <select id="diluicao">
+        <option value="1">1:1</option>
+        <option value="2">1:2</option>
+        <option value="3">1:3</option>
+        <option value="4">1:4</option>
+        <option value="5" selected>1:5</option>
+        <option value="6">1:6</option>
+        <option value="7">1:7</option>
+        <option value="8">1:8</option>
+        <option value="9">1:9</option>
+        <option value="10">1:10</option>
+        <option value="15">1:15</option>
+        <option value="20">1:20</option>
+        <option value="30">1:30</option>
+        <option value="40">1:40</option>
+        <option value="50">1:50</option>
+        <option value="100">1:100</option>
+        <option value="custom">Outra…</option>
+      </select>
+      <input id="diluicao-custom" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="Digite a diluição (ex.: 8 para 1:8)" style="display:none;margin-top:10px">
+    </div>
+  </div>
+
+  <div class="card" id="resultado">
+    <span class="metodo-tag" id="metodo-tag">Selecione um fabricante para começar</span>
+    <div class="boxes">
+      <div class="box"><h3>Produto</h3><div class="v" id="v-produto">—</div></div>
+      <div class="box"><h3>Água</h3><div class="v" id="v-agua">—</div></div>
+      <div class="box total"><h3>Solução total</h3><div class="v" id="v-total">—</div></div>
+    </div>
+    <div class="resumo" id="resumo"></div>
+    <button class="copiar" id="copiar">📋 Copiar resultado</button>
+  </div>
+
+  <details class="sugestoes">
+    <summary>Tabela de sugestões (500 ml) <span class="chev">▾</span></summary>
+    <div class="tab-wrap">
+      <table>
+        <thead><tr><th>Diluição</th><th>Método 1:1</th><th>Método 1:2</th></tr></thead>
+        <tbody id="tabela-sug"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <div id="instalar">
+    <img src="icons/icon-512.png" alt="">
+    <div class="txt"><b>Instalar como app</b>Acesso rápido, funciona offline.</div>
+    <button id="btn-instalar">Instalar</button>
+  </div>
+
+  <footer>
+    Feito por <a href="https://www.miromi.com.br" target="_blank" rel="noopener">Miromi</a> ·
+    <a href="https://www.miromi.com.br/blog/calculadora-de-diluicao" target="_blank" rel="noopener">Ver no blog</a><br>
+    Confira sempre a recomendação do fabricante.
+  </footer>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+
+// formata em ml ou litros para leitura fácil
+function fmtVol(ml){
+  if(ml >= 1000 && Number.isInteger(ml/10)) {
+    const l = ml/1000;
+    if(Number.isInteger(l) || (ml % 100 === 0)) return fmt(ml)+' ml';
+  }
+  return fmt(ml)+' ml';
+}
+
+function getMetodo(){
+  const sel = $('fabricante');
+  if(!sel.value) return null;
+  const opt = sel.selectedOptions[0];
+  return opt.getAttribute('data-metodo'); // '1:1' ou '1:2'
+}
+function getVolume(){
+  const v = $('volume').value;
+  if(v === 'custom') return parseFloat($('volume-custom').value);
+  return parseFloat(v);
+}
+function getX(){
+  const d = $('diluicao').value;
+  if(d === 'custom') return parseFloat($('diluicao-custom').value);
+  return parseFloat(d);
+}
+
+function calcular(){
+  const metodo = getMetodo();
+  const volume = getVolume();
+  const X = getX();
+
+  const tag = $('metodo-tag');
+  if(!metodo){
+    tag.textContent = 'Selecione um fabricante para começar';
+    $('v-produto').textContent='—'; $('v-agua').textContent='—'; $('v-total').textContent='—';
+    $('resumo').textContent=''; return;
+  }
+  if(isNaN(volume) || volume<=0 || isNaN(X) || X<1){
+    tag.textContent = 'Preencha volume e diluição válidos';
+    $('v-produto').textContent='—'; $('v-agua').textContent='—'; $('v-total').textContent='—';
+    $('resumo').textContent=''; return;
+  }
+
+  let produto;
+  if(metodo === '1:1') produto = volume/(1+X);
+  else produto = volume/X;
+  const agua = volume - produto;
+
+  const nomeFab = $('fabricante').selectedOptions[0].text;
+  tag.textContent = `${nomeFab} · método ${metodo} · diluição 1:${X}`;
+  $('v-produto').innerHTML = `${fmt(produto)} <small>ml</small>`;
+  $('v-agua').innerHTML = `${fmt(agua)} <small>ml</small>`;
+  $('v-total').innerHTML = `${fmtVol(volume)}`;
+  $('resumo').innerHTML = `Misture <b>${fmt(produto)} ml de produto</b> com <b>${fmt(agua)} ml de água</b>.`;
+}
+
+// tabela de sugestões (igual ao original: base 500 ml)
+function tabelaSugestoes(){
+  const linhas=[1,2,3,4,5,10,20,50,100], base=500, tb=$('tabela-sug');
+  tb.innerHTML='';
+  linhas.forEach(X=>{
+    const p11=base/(1+X), a11=base-p11;
+    const p12=base/X,     a12=base-p12;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>1:${X}</td>
+      <td>Prod. ${fmt(p11)}<br>Água ${fmt(a11)}</td>
+      <td>Prod. ${fmt(p12)}<br>Água ${fmt(a12)}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+// copiar
+$('copiar').addEventListener('click', async ()=>{
+  const txt = $('resumo').textContent.trim();
+  if(!txt || $('v-produto').textContent==='—'){ return; }
+  const full = `${$('metodo-tag').textContent}\n${txt}\nTotal: ${$('v-total').textContent.replace(/\s+/g,' ')}`;
+  try{ await navigator.clipboard.writeText(full); }catch(e){}
+  const b=$('copiar'); const o=b.textContent;
+  b.textContent='✅ Copiado!'; b.classList.add('ok');
+  setTimeout(()=>{ b.textContent=o; b.classList.remove('ok'); },1500);
+});
+
+// toggles de campos custom
+$('volume').addEventListener('change', function(){
+  const c=$('volume-custom');
+  if(this.value==='custom'){ c.style.display='block'; c.focus(); } else c.style.display='none';
+  calcular();
+});
+$('diluicao').addEventListener('change', function(){
+  const c=$('diluicao-custom');
+  if(this.value==='custom'){ c.style.display='block'; c.focus(); } else c.style.display='none';
+  calcular();
+});
+['fabricante','volume-custom','diluicao-custom'].forEach(id=>{
+  $(id).addEventListener('input', calcular);
+  $(id).addEventListener('change', calcular);
+});
+
+tabelaSugestoes();
+calcular();
+
+// PWA: service worker
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('sw.js'));
+}
+// PWA: prompt de instalação
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault(); deferredPrompt=e;
+  $('instalar').style.display='flex';
+});
+$('btn-instalar').addEventListener('click', async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt=null;
+  $('instalar').style.display='none';
+});
+window.addEventListener('appinstalled', ()=> $('instalar').style.display='none');
+</script>
+</body>
+</html>
