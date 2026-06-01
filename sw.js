@@ -1,9 +1,10 @@
 // Service worker — cache para uso offline
-const CACHE = 'diluicao-v1';
+const CACHE = 'diluicao-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './icons/miromi-m.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
