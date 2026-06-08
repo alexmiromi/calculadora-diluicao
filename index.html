@@ -67,13 +67,6 @@ select:focus,input:focus{outline:none;border-color:var(--verde-claro);box-shadow
 .check input:checked{background:var(--verde);border-color:var(--verde)}
 .check input:checked::after{content:"";position:absolute;left:6px;top:1px;width:5px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
 .check small{display:block;font-weight:400;color:var(--cinza);font-size:12.5px;margin-top:2px}
-.alerta{position:relative;flex:none;cursor:help;align-self:center;-webkit-tap-highlight-color:transparent}
-.alerta[hidden]{display:none}
-.alerta-ico{display:inline-block;font-size:20px;line-height:1;animation:pulso 1.6s ease-in-out infinite}
-.alerta-pop{position:absolute;right:0;top:calc(100% + 9px);width:min(260px,72vw);z-index:20;background:#15241a;color:#fff;font-size:12.5px;font-weight:500;line-height:1.45;padding:11px 13px;border-radius:12px;box-shadow:var(--sombra);text-align:left;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .15s,transform .15s,visibility .15s}
-.alerta-pop::after{content:"";position:absolute;bottom:100%;right:13px;border:7px solid transparent;border-bottom-color:#15241a}
-.alerta:hover .alerta-pop,.alerta:focus .alerta-pop,.alerta.aberto .alerta-pop{opacity:1;visibility:visible;transform:translateY(0)}
-@keyframes pulso{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 
 #resultado{margin-top:6px}
 .metodo-tag{
@@ -226,10 +219,6 @@ footer a{color:var(--verde);text-decoration:none;font-weight:600}
           <input type="checkbox" id="canhao">
           <span>Usar no canhão de espuma? <small>(adiciona 12× de água no uso — multiplicamos o produto por 12 pra compensar)</small></span>
         </label>
-        <span class="alerta" id="alerta-canhao" tabindex="0" role="button" aria-label="Por que não cabe no canhão?" hidden>
-          <span class="alerta-ico">⚠️</span>
-          <span class="alerta-pop" id="alerta-pop"></span>
-        </span>
       </div>
     </div>
   </div>
@@ -313,8 +302,6 @@ function calcular(){
 
   const tag = $('metodo-tag');
   const checkRow = $('check-canhao');
-  const alerta = $('alerta-canhao');
-  const fecharAlerta = () => { alerta.hidden = true; alerta.classList.remove('aberto'); };
 
   // o checkbox do canhão só aparece com fabricante escolhido E diluição 1:15+
   const podeCanhao = !!metodo && X >= 15;
@@ -324,12 +311,12 @@ function calcular(){
   if(!metodo){
     tag.textContent = 'Selecione um fabricante para começar';
     $('v-produto').textContent='—'; $('v-agua').textContent='—'; $('v-total').textContent='—';
-    $('resumo').textContent=''; fecharAlerta(); return;
+    $('resumo').textContent=''; return;
   }
   if(isNaN(volume) || volume<=0 || isNaN(X) || X<1){
     tag.textContent = 'Preencha volume e diluição válidos';
     $('v-produto').textContent='—'; $('v-agua').textContent='—'; $('v-total').textContent='—';
-    $('resumo').textContent=''; fecharAlerta(); return;
+    $('resumo').textContent=''; return;
   }
 
   let produto;
@@ -340,17 +327,6 @@ function calcular(){
   if(canhao) produto = produto * MULT_CANHAO;
 
   const nomeFab = $('fabricante').selectedOptions[0].text;
-
-  // caso-limite: produto multiplicado não cabe no volume → ícone ⚠️ com layer (hover/toque)
-  if(canhao && produto >= volume){
-    alerta.hidden = false;
-    $('alerta-pop').textContent = `A diluição 1:${X} é concentrada demais pro canhão de espuma nesse volume (precisaria de ${fmt(produto)} ml de produto em ${fmtVol(volume)}). Use uma diluição mais fraca (1:20+) ou um volume maior.`;
-    tag.textContent = `${nomeFab} · canhão de espuma`;
-    $('v-produto').textContent='—'; $('v-agua').textContent='—'; $('v-total').textContent='—';
-    $('resumo').textContent='';
-    return;
-  }
-  fecharAlerta();
 
   const agua = volume - produto;
 
@@ -403,11 +379,6 @@ $('diluicao').addEventListener('change', function(){
   $(id).addEventListener('change', calcular);
 });
 $('canhao').addEventListener('change', calcular);
-
-// alerta ⚠️ do canhão: layer abre no hover (desktop) e no toque (mobile)
-const alertaEl = $('alerta-canhao');
-alertaEl.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); alertaEl.classList.toggle('aberto'); });
-document.addEventListener('click', e=>{ if(!alertaEl.contains(e.target)) alertaEl.classList.remove('aberto'); });
 
 tabelaSugestoes();
 calcular();
