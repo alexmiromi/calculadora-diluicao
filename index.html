@@ -224,7 +224,7 @@ footer a{color:var(--verde);text-decoration:none;font-weight:600}
       <div class="check-row" id="check-canhao" hidden>
         <label class="check">
           <input type="checkbox" id="canhao">
-          <span>Usar no canhão de espuma? <small>(adiciona 15× de água no uso — multiplicamos o produto por 15 pra compensar)</small></span>
+          <span>Usar no canhão de espuma? <small>(adiciona 12× de água no uso — multiplicamos o produto por 12 pra compensar)</small></span>
         </label>
         <span class="alerta" id="alerta-canhao" tabindex="0" role="button" aria-label="Por que não cabe no canhão?" hidden>
           <span class="alerta-ico">⚠️</span>
@@ -278,7 +278,7 @@ footer a{color:var(--verde);text-decoration:none;font-weight:600}
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
-const MULT_CANHAO = 15; // canhão de espuma injeta ~15× de água no uso
+const MULT_CANHAO = 12; // canhão de espuma injeta ~12× de água no uso
 
 // formata em ml ou litros para leitura fácil
 function fmtVol(ml){
@@ -358,7 +358,7 @@ function calcular(){
   $('v-produto').innerHTML = `${fmt(produto)} <small>ml</small>`;
   $('v-agua').innerHTML = `${fmt(agua)} <small>ml</small>`;
   $('v-total').innerHTML = `${fmtVol(volume)}`;
-  $('resumo').innerHTML = `Misture <b>${fmt(produto)} ml de produto</b> com <b>${fmt(agua)} ml de água</b>.${canhao ? `<br><small>Modo canhão: produto ×15. No carro sai 1:${X}.</small>` : ''}`;
+  $('resumo').innerHTML = `Misture <b>${fmt(produto)} ml de produto</b> com <b>${fmt(agua)} ml de água</b>.${canhao ? `<br><small>Modo canhão: produto ×12. No carro sai 1:${X}.</small>` : ''}`;
 }
 
 // tabela de sugestões (igual ao original: base 500 ml)
