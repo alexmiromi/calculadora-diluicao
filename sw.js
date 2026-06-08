@@ -1,5 +1,5 @@
 // Service worker — cache para uso offline
-const CACHE = 'diluicao-v10';
+const CACHE = 'diluicao-v11';
 const ASSETS = [
   './',
   './index.html',
