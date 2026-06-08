@@ -65,7 +65,7 @@ select:focus,input:focus{outline:none;border-color:var(--verde-claro);box-shadow
 .check:has(input:checked) > span{color:var(--verde)}
 .check input{appearance:none;-webkit-appearance:none;width:24px;height:24px;flex:none;margin:0;padding:0;border:2px solid var(--linha);border-radius:7px;background:#fff;cursor:pointer;position:relative;transition:.15s}
 .check input:checked{background:var(--verde);border-color:var(--verde)}
-.check input:checked::after{content:"";position:absolute;left:8px;top:3px;width:5px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
+.check input:checked::after{content:"";position:absolute;left:6px;top:1px;width:5px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
 .check small{display:block;font-weight:400;color:var(--cinza);font-size:12.5px;margin-top:2px}
 .alerta{position:relative;flex:none;cursor:help;align-self:center;-webkit-tap-highlight-color:transparent}
 .alerta[hidden]{display:none}
@@ -316,8 +316,10 @@ function calcular(){
   const alerta = $('alerta-canhao');
   const fecharAlerta = () => { alerta.hidden = true; alerta.classList.remove('aberto'); };
 
-  // o checkbox do canhão só aparece depois de informar o fabricante/método
-  checkRow.hidden = !metodo;
+  // o checkbox do canhão só aparece com fabricante escolhido E diluição 1:15+
+  const podeCanhao = !!metodo && X >= 15;
+  checkRow.hidden = !podeCanhao;
+  if(!podeCanhao) $('canhao').checked = false; // evita aplicar o ×15 com o campo oculto
 
   if(!metodo){
     tag.textContent = 'Selecione um fabricante para começar';
