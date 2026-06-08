@@ -63,10 +63,10 @@ select:focus,input:focus{outline:none;border-color:var(--verde-claro);box-shadow
 .check{display:flex;align-items:flex-start;gap:10px;flex:1;cursor:pointer;font-size:14px;font-weight:600;padding:12px;border:2px solid var(--linha);border-radius:14px;transition:.15s}
 .check:has(input:checked){border-color:var(--verde-claro);background:var(--verde-bg);box-shadow:0 0 0 4px rgba(52,199,89,.12)}
 .check:has(input:checked) > span{color:var(--verde)}
-.check input{width:24px;height:24px;flex:none;accent-color:var(--verde);margin:0}
+.check input{appearance:none;-webkit-appearance:none;width:24px;height:24px;flex:none;margin:0;padding:0;border:2px solid var(--linha);border-radius:7px;background:#fff;cursor:pointer;position:relative;transition:.15s}
+.check input:checked{background:var(--verde);border-color:var(--verde)}
+.check input:checked::after{content:"";position:absolute;left:8px;top:3px;width:5px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
 .check small{display:block;font-weight:400;color:var(--cinza);font-size:12.5px;margin-top:2px}
-.check-ok{margin-left:auto;flex:none;align-self:center;width:24px;height:24px;border-radius:50%;background:var(--verde);color:#fff;font-size:14px;font-weight:800;display:none;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,142,62,.35)}
-.check:has(input:checked) .check-ok{display:inline-flex}
 .alerta{position:relative;flex:none;cursor:help;align-self:center;-webkit-tap-highlight-color:transparent}
 .alerta[hidden]{display:none}
 .alerta-ico{display:inline-block;font-size:20px;line-height:1;animation:pulso 1.6s ease-in-out infinite}
@@ -225,7 +225,6 @@ footer a{color:var(--verde);text-decoration:none;font-weight:600}
         <label class="check">
           <input type="checkbox" id="canhao">
           <span>Usar no canhão de espuma? <small>(adiciona 15× de água no uso — multiplicamos o produto por 15 pra compensar)</small></span>
-          <span class="check-ok" aria-hidden="true">✓</span>
         </label>
         <span class="alerta" id="alerta-canhao" tabindex="0" role="button" aria-label="Por que não cabe no canhão?" hidden>
           <span class="alerta-ico">⚠️</span>
