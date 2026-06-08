@@ -58,9 +58,20 @@ select{
 }
 select:focus,input:focus{outline:none;border-color:var(--verde-claro);box-shadow:0 0 0 4px rgba(52,199,89,.15)}
 .dica{font-size:12.5px;color:var(--cinza);margin-top:6px}
-.check{display:flex;align-items:flex-start;gap:10px;margin-top:12px;cursor:pointer;font-size:14px;font-weight:600}
-.check input{width:22px;height:22px;flex:none;accent-color:var(--verde);margin:0}
+.check-row{display:flex;align-items:center;gap:8px;margin-top:12px}
+.check-row[hidden]{display:none}
+.check{display:flex;align-items:flex-start;gap:10px;flex:1;cursor:pointer;font-size:14px;font-weight:600;padding:12px;border:2px solid var(--linha);border-radius:14px;transition:.15s}
+.check:has(input:checked){border-color:var(--verde-claro);background:var(--verde-bg);box-shadow:0 0 0 4px rgba(52,199,89,.12)}
+.check:has(input:checked) > span{color:var(--verde)}
+.check input{width:24px;height:24px;flex:none;accent-color:var(--verde);margin:0}
 .check small{display:block;font-weight:400;color:var(--cinza);font-size:12.5px;margin-top:2px}
+.alerta{position:relative;flex:none;cursor:help;align-self:center;-webkit-tap-highlight-color:transparent}
+.alerta[hidden]{display:none}
+.alerta-ico{display:inline-block;font-size:20px;line-height:1;animation:pulso 1.6s ease-in-out infinite}
+.alerta-pop{position:absolute;right:0;top:calc(100% + 9px);width:min(260px,72vw);z-index:20;background:#15241a;color:#fff;font-size:12.5px;font-weight:500;line-height:1.45;padding:11px 13px;border-radius:12px;box-shadow:var(--sombra);text-align:left;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .15s,transform .15s,visibility .15s}
+.alerta-pop::after{content:"";position:absolute;bottom:100%;right:13px;border:7px solid transparent;border-bottom-color:#15241a}
+.alerta:hover .alerta-pop,.alerta:focus .alerta-pop,.alerta.aberto .alerta-pop{opacity:1;visibility:visible;transform:translateY(0)}
+@keyframes pulso{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 
 #resultado{margin-top:6px}
 .metodo-tag{
@@ -208,10 +219,16 @@ footer a{color:var(--verde);text-decoration:none;font-weight:600}
         <option value="custom">Outra diluição…</option>
       </select>
       <input id="diluicao-custom" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="Digite a diluição (ex.: 8 para 1:8)" style="display:none;margin-top:10px">
-      <label class="check">
-        <input type="checkbox" id="canhao">
-        <span>Usar no canhão de espuma? <small>(adiciona 15× de água no uso — multiplicamos o produto por 15 pra compensar)</small></span>
-      </label>
+      <div class="check-row" id="check-canhao" hidden>
+        <label class="check">
+          <input type="checkbox" id="canhao">
+          <span>Usar no canhão de espuma? <small>(adiciona 15× de água no uso — multiplicamos o produto por 15 pra compensar)</small></span>
+        </label>
+        <span class="alerta" id="alerta-canhao" tabindex="0" role="button" aria-label="Por que não cabe no canhão?" hidden>
+          <span class="alerta-ico">⚠️</span>
+          <span class="alerta-pop" id="alerta-pop"></span>
+        </span>
+      </div>
     </div>
   </div>
 
@@ -293,15 +310,22 @@ function calcular(){
   const X = getX();
 
   const tag = $('metodo-tag');
+  const checkRow = $('check-canhao');
+  const alerta = $('alerta-canhao');
+  const fecharAlerta = () => { alerta.hidden = true; alerta.classList.remove('aberto'); };
+
+  // o checkbox do canhão só aparece depois de informar o fabricante/método
+  checkRow.hidden = !metodo;
+
   if(!metodo){
     tag.textContent = 'Selecione um fabricante para começar';
     $('v-produto').textContent='—'; $('v-agua').textContent='—'; $('v-total').textContent='—';
-    $('resumo').textContent=''; return;
+    $('resumo').textContent=''; fecharAlerta(); return;
   }
   if(isNaN(volume) || volume<=0 || isNaN(X) || X<1){
     tag.textContent = 'Preencha volume e diluição válidos';
     $('v-produto').textContent='—'; $('v-agua').textContent='—'; $('v-total').textContent='—';
-    $('resumo').textContent=''; return;
+    $('resumo').textContent=''; fecharAlerta(); return;
   }
 
   let produto;
@@ -313,13 +337,16 @@ function calcular(){
 
   const nomeFab = $('fabricante').selectedOptions[0].text;
 
-  // caso-limite: produto ×15 não cabe no volume do reservatório
+  // caso-limite: produto ×15 não cabe no volume → ícone ⚠️ com layer (hover/toque)
   if(canhao && produto >= volume){
+    alerta.hidden = false;
+    $('alerta-pop').textContent = `A diluição 1:${X} é concentrada demais pro canhão de espuma nesse volume (precisaria de ${fmt(produto)} ml de produto em ${fmtVol(volume)}). Use uma diluição mais fraca (1:20+) ou um volume maior.`;
     tag.textContent = `${nomeFab} · canhão de espuma`;
     $('v-produto').textContent='—'; $('v-agua').textContent='—'; $('v-total').textContent='—';
-    $('resumo').innerHTML = `⚠️ A diluição 1:${X} é concentrada demais pro canhão de espuma nesse volume (precisaria de ${fmt(produto)} ml de produto em ${fmtVol(volume)}). Use uma diluição mais fraca (1:20+) ou um volume maior.`;
+    $('resumo').textContent='';
     return;
   }
+  fecharAlerta();
 
   const agua = volume - produto;
 
@@ -372,6 +399,11 @@ $('diluicao').addEventListener('change', function(){
   $(id).addEventListener('change', calcular);
 });
 $('canhao').addEventListener('change', calcular);
+
+// alerta ⚠️ do canhão: layer abre no hover (desktop) e no toque (mobile)
+const alertaEl = $('alerta-canhao');
+alertaEl.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); alertaEl.classList.toggle('aberto'); });
+document.addEventListener('click', e=>{ if(!alertaEl.contains(e.target)) alertaEl.classList.remove('aberto'); });
 
 tabelaSugestoes();
 calcular();
