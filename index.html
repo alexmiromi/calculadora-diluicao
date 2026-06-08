@@ -58,6 +58,9 @@ select{
 }
 select:focus,input:focus{outline:none;border-color:var(--verde-claro);box-shadow:0 0 0 4px rgba(52,199,89,.15)}
 .dica{font-size:12.5px;color:var(--cinza);margin-top:6px}
+.check{display:flex;align-items:flex-start;gap:10px;margin-top:12px;cursor:pointer;font-size:14px;font-weight:600}
+.check input{width:22px;height:22px;flex:none;accent-color:var(--verde);margin:0}
+.check small{display:block;font-weight:400;color:var(--cinza);font-size:12.5px;margin-top:2px}
 
 #resultado{margin-top:6px}
 .metodo-tag{
@@ -205,6 +208,10 @@ footer a{color:var(--verde);text-decoration:none;font-weight:600}
         <option value="custom">Outra diluição…</option>
       </select>
       <input id="diluicao-custom" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="Digite a diluição (ex.: 8 para 1:8)" style="display:none;margin-top:10px">
+      <label class="check">
+        <input type="checkbox" id="canhao">
+        <span>Usar no canhão de espuma? <small>(adiciona 15× de água no uso — multiplicamos o produto por 15 pra compensar)</small></span>
+      </label>
     </div>
   </div>
 
@@ -252,6 +259,7 @@ footer a{color:var(--verde);text-decoration:none;font-weight:600}
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+const MULT_CANHAO = 15; // canhão de espuma injeta ~15× de água no uso
 
 // formata em ml ou litros para leitura fácil
 function fmtVol(ml){
@@ -299,14 +307,27 @@ function calcular(){
   let produto;
   if(metodo === '1:1') produto = volume/(1+X);
   else produto = volume/X;
-  const agua = volume - produto;
+
+  const canhao = $('canhao').checked;
+  if(canhao) produto = produto * MULT_CANHAO;
 
   const nomeFab = $('fabricante').selectedOptions[0].text;
-  tag.textContent = `${nomeFab} · método ${metodo} · diluição 1:${X}`;
+
+  // caso-limite: produto ×15 não cabe no volume do reservatório
+  if(canhao && produto >= volume){
+    tag.textContent = `${nomeFab} · canhão de espuma`;
+    $('v-produto').textContent='—'; $('v-agua').textContent='—'; $('v-total').textContent='—';
+    $('resumo').innerHTML = `⚠️ A diluição 1:${X} é concentrada demais pro canhão de espuma nesse volume (precisaria de ${fmt(produto)} ml de produto em ${fmtVol(volume)}). Use uma diluição mais fraca (1:20+) ou um volume maior.`;
+    return;
+  }
+
+  const agua = volume - produto;
+
+  tag.textContent = `${nomeFab} · método ${metodo} · diluição 1:${X}${canhao ? ' · canhão de espuma' : ''}`;
   $('v-produto').innerHTML = `${fmt(produto)} <small>ml</small>`;
   $('v-agua').innerHTML = `${fmt(agua)} <small>ml</small>`;
   $('v-total').innerHTML = `${fmtVol(volume)}`;
-  $('resumo').innerHTML = `Misture <b>${fmt(produto)} ml de produto</b> com <b>${fmt(agua)} ml de água</b>.`;
+  $('resumo').innerHTML = `Misture <b>${fmt(produto)} ml de produto</b> com <b>${fmt(agua)} ml de água</b>.${canhao ? `<br><small>Modo canhão: produto ×15. No carro sai 1:${X}.</small>` : ''}`;
 }
 
 // tabela de sugestões (igual ao original: base 500 ml)
@@ -350,6 +371,7 @@ $('diluicao').addEventListener('change', function(){
   $(id).addEventListener('input', calcular);
   $(id).addEventListener('change', calcular);
 });
+$('canhao').addEventListener('change', calcular);
 
 tabelaSugestoes();
 calcular();
