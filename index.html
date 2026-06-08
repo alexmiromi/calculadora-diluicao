@@ -319,7 +319,7 @@ function calcular(){
   // o checkbox do canhão só aparece com fabricante escolhido E diluição 1:15+
   const podeCanhao = !!metodo && X >= 15;
   checkRow.hidden = !podeCanhao;
-  if(!podeCanhao) $('canhao').checked = false; // evita aplicar o ×15 com o campo oculto
+  if(!podeCanhao) $('canhao').checked = false; // evita aplicar o multiplicador com o campo oculto
 
   if(!metodo){
     tag.textContent = 'Selecione um fabricante para começar';
@@ -341,7 +341,7 @@ function calcular(){
 
   const nomeFab = $('fabricante').selectedOptions[0].text;
 
-  // caso-limite: produto ×15 não cabe no volume → ícone ⚠️ com layer (hover/toque)
+  // caso-limite: produto multiplicado não cabe no volume → ícone ⚠️ com layer (hover/toque)
   if(canhao && produto >= volume){
     alerta.hidden = false;
     $('alerta-pop').textContent = `A diluição 1:${X} é concentrada demais pro canhão de espuma nesse volume (precisaria de ${fmt(produto)} ml de produto em ${fmtVol(volume)}). Use uma diluição mais fraca (1:20+) ou um volume maior.`;
